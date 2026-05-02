@@ -59,6 +59,18 @@
         <label for="log">Log</label>
         <textarea id="log" readonly aria-live="polite"></textarea>
       </section>
+
+      <section class="qasm-panel hidden" id="qasm-panel" aria-label="Quantum circuit">
+        <div class="qasm-header">
+          <span class="qasm-label">⚛ Quantum Circuit — last spin</span>
+          <button class="qasm-copy-btn" type="button">Copy QASM</button>
+        </div>
+        <pre class="qasm-source" aria-label="QASM circuit source"></pre>
+        <div class="qasm-bits-row">
+          <span class="qasm-bits-label">Measurement c[255:0] =</span>
+          <code class="qasm-bits"></code>
+        </div>
+      </section>
     </main>
 
     <dialog id="settings-dialog" class="settings-dialog">
@@ -82,6 +94,10 @@
           <label class="checkbox">
             <input type="checkbox" id="toggle-sound" checked />
             <span>Sound</span>
+          </label>
+          <label class="checkbox">
+            <input type="checkbox" id="toggle-qasm" />
+            <span>Show QASM circuit panel</span>
           </label>
         </section>
 
