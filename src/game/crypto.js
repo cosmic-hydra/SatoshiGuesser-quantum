@@ -2,6 +2,7 @@ import { getPublicKey } from '@noble/secp256k1';
 import { sha256 } from '@noble/hashes/sha256';
 import { ripemd160 } from '@noble/hashes/ripemd160';
 import { base58check } from '@scure/base';
+import { quantumRandomPrivKey } from './qasm.js';
 
 const b58c = base58check(sha256);
 
@@ -29,10 +30,12 @@ export function privKeyToWif(privKey, compressed) {
   return b58c.encode(payload);
 }
 
+/**
+ * Generate a 32-byte private key using a simulated OpenQASM 2.0 circuit:
+ * 256 qubits in superposition via Hadamard gates, collapsed by measurement.
+ */
 export function randomPrivKey() {
-  const buf = new Uint8Array(32);
-  crypto.getRandomValues(buf);
-  return buf;
+  return quantumRandomPrivKey();
 }
 
 export function deriveAll(privKey) {

@@ -2,13 +2,56 @@
 
 A slot-machine web game that "guesses" Satoshi Nakamoto's Bitcoin private
 keys. The odds are astronomically remote (~1 in 5.27 × 10⁷² per spin), but
-the cryptography is real: every pull rolls a random 256-bit number, derives
-the Bitcoin address, and checks it against a curated set of ~22,000
-Patoshi-pattern coinbase addresses plus the genesis block. If the derived
-address ever matches, the random number you rolled **is** the working
-private key for that wallet — no server, no API, no catch.
+the cryptography is real: every pull generates a random 256-bit number via a
+**simulated OpenQASM 2.0 quantum circuit**, derives the Bitcoin address, and
+checks it against a curated set of ~22,000 Patoshi-pattern coinbase addresses
+plus the genesis block. If the derived address ever matches, the random number
+you rolled **is** the working private key for that wallet — no server, no API,
+no catch.
 
 Live at **[satoshiguesser.com](https://satoshiguesser.com)** (when deployed).
+
+---
+
+## Quantum random-number generation (QASM)
+
+Every spin generates a fresh private key using a simulated
+[OpenQASM 2.0](https://arxiv.org/abs/1707.03429) quantum circuit:
+
+```qasm
+OPENQASM 2.0;
+include "qelib1.inc";
+
+qreg q[256];
+creg c[256];
+
+h q[0];
+h q[1];
+// … 254 more Hadamard gates …
+h q[255];
+
+measure q -> c;
+```
+
+**How it works:**
+1. 256 qubits are initialised to |0⟩.
+2. A Hadamard gate (`h`) is applied to each qubit, placing it in equal
+   superposition: |+⟩ = (|0⟩ + |1⟩) / √2.
+3. Measuring collapses each qubit to 0 or 1 with equal probability.
+4. The 256 resulting bits are the private key.
+
+**Simulation vs. real hardware:** The browser/Node simulation draws
+measurement outcomes from `crypto.getRandomValues()` — a CSPRNG whose output
+is statistically indistinguishable from a true quantum measurement on this
+circuit.  The QASM source is fully valid; run it unchanged on a real quantum
+processor (e.g. IBM Quantum) to obtain hardware-backed randomness.
+
+**QASM panel:** enable *Show QASM circuit panel* in ⚙ Settings to inspect the
+exact circuit and 256-bit measurement result for every spin. A *Copy QASM*
+button exports the full source for use on real quantum hardware.
+
+The QASM logic lives in `src/game/qasm.js`.  The display component is in
+`src/ui/qasm-display.js`.
 
 ---
 
@@ -41,6 +84,9 @@ Nothing else. No node connection, no API call, no telemetry.
 
 ## Features
 
+- **Quantum key generation:** every spin runs a simulated 256-qubit OpenQASM
+  2.0 Hadamard circuit; enable the *Show QASM circuit panel* toggle in
+  Settings to see the exact circuit and raw measurement bits for each spin.
 - **Two reel modes:** classic 3-reel ✗/✓, or "realistic" 64 hex cells that
   reveal the full candidate private key with red/green flash on result.
 - **No-delay toggle:** skip animations, snap results in synchronously.
@@ -92,6 +138,7 @@ SatoshiGuesser/
 │   ├── main.js                   # app entry: wires UI, audio, game loop
 │   ├── game/
 │   │   ├── crypto.js             # privkey → secp256k1 → HASH160 → P2PKH; WIF
+│   │   ├── qasm.js               # OpenQASM 2.0 circuit builder + simulator (QRNG)
 │   │   ├── bloom.js              # Bloom filter (serialise + has/add)
 │   │   ├── wallet-table.js       # sorted (hash160, balance) binary search
 │   │   ├── wallets.js            # lazy-loads bloom + table; checkHash160s()
@@ -100,6 +147,7 @@ SatoshiGuesser/
 │   │   ├── log.js                # rolling log textarea
 │   │   ├── slot-classic.js       # 3-reel ✗/✓ animation
 │   │   ├── slot-realistic.js     # 64 hex cells with red/green flash
+│   │   ├── qasm-display.js       # QASM circuit panel (condensed view + copy)
 │   │   └── win-dialog.js         # modal + confetti + clipboard
 │   ├── audio/audio.js            # Web Audio synthesised SFX
 │   └── styles/{main,slot}.css
@@ -195,11 +243,14 @@ const AUTOSPIN_DELAY_NO_DELAY_MS = 16;  // when "No delay" is also on
 npm test
 ```
 
-11 tests covering:
+23 tests covering:
 
 - known privkey → pubkey → P2PKH address vectors (Bitcoin wiki test vectors)
 - WIF encoding (uncompressed and compressed)
 - HASH160 round-trip
+- OpenQASM 2.0 circuit builder (header, gate count, default 256-qubit circuit)
+- QASM simulator (bit count, byte length, bit/byte consistency)
+- Quantum random key generation (length, state storage, uniqueness)
 - Bloom filter add / has + serialise / deserialise
 - Sorted table binary-search hit and miss
 - End-to-end miss path (random key against the real bloom)

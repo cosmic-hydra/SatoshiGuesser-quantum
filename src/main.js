@@ -6,10 +6,12 @@ import {
   deriveAll,
   parsePrivKey,
 } from './game/crypto.js';
+import { getLastQasmCircuit, getLastQasmBits } from './game/qasm.js';
 import { Log } from './ui/log.js';
 import { ClassicReels } from './ui/slot-classic.js';
 import { RealisticReels } from './ui/slot-realistic.js';
 import { WinDialog } from './ui/win-dialog.js';
+import { QasmDisplay } from './ui/qasm-display.js';
 import { sfx, setMuted, unlock } from './audio/audio.js';
 
 // Throttle for autospin only — manual spamming has no extra cooldown beyond
@@ -104,6 +106,14 @@ async function main() {
   const noDelayToggle = document.getElementById('toggle-no-delay');
   const autospinToggle = document.getElementById('toggle-autospin');
   const soundToggle = document.getElementById('toggle-sound');
+  const qasmToggle = document.getElementById('toggle-qasm');
+
+  const qasmDisplay = new QasmDisplay(document.getElementById('qasm-panel'));
+
+  qasmToggle.addEventListener('change', (e) => {
+    if (e.target.checked) qasmDisplay.show();
+    else qasmDisplay.hide();
+  });
 
   let realisticMode = false;
   realisticToggle.addEventListener('change', (e) => {
@@ -244,6 +254,9 @@ async function main() {
       `key=${shorten(result.privKeyHex, 6)} ` +
         `addr=${shorten(result.derived.addressUncompressed, 6)}`
     );
+
+    // Refresh the QASM circuit panel with the circuit used for this spin.
+    qasmDisplay.update(getLastQasmCircuit(), getLastQasmBits());
 
     if (noDelay) {
       if (realisticMode) realistic.flashResult(result.privKeyHex, result.win);
