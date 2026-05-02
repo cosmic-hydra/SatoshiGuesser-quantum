@@ -65,6 +65,8 @@ export function buildQasmSource(numQubits = NUM_QUBITS) {
 export function simulateQasmMeasurement(numQubits = NUM_QUBITS) {
   // Always allocate at least 32 bytes so the private key derivation has
   // sufficient entropy regardless of how many qubits the circuit uses.
+  // With fewer than 256 qubits the quantum measurement is demonstrative;
+  // the remaining key entropy is supplied by the CSPRNG padding below.
   const numBytes = Math.max(32, Math.ceil(numQubits / 8));
   const bytes = new Uint8Array(numBytes);
   crypto.getRandomValues(bytes);
