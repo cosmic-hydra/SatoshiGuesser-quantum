@@ -32,7 +32,7 @@ export function privKeyToWif(privKey, compressed) {
 
 /**
  * Generate a 32-byte private key using a simulated OpenQASM 2.0 circuit:
- * 256 qubits in superposition via Hadamard gates, collapsed by measurement.
+ * 6 qubits in superposition via Hadamard gates, collapsed by measurement.
  */
 export function randomPrivKey() {
   return quantumRandomPrivKey();

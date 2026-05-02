@@ -30,7 +30,7 @@ export class QasmDisplay {
    * Refresh the panel with a new circuit + measurement result.
    *
    * @param {string}   circuit  Full OpenQASM 2.0 source string
-   * @param {number[]} bits     256-element array of 0/1
+   * @param {number[]} bits     Array of 0/1 measurement results (one per qubit)
    */
   update(circuit, bits) {
     this._fullCircuit = circuit;
