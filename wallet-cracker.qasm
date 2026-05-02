@@ -1,5 +1,5 @@
 // ============================================================
-// SatoshiGuesser — Quantum Bitcoin Wallet Cracker
+// wallet-cracker.qasm — SatoshiGuesser Quantum Bitcoin Wallet Cracker
 //
 // Main wallet-cracking quantum circuit (OpenQASM 2.0).
 //
