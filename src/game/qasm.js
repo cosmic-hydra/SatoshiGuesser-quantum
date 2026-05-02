@@ -3,10 +3,10 @@
  *
  * Architecture
  * ────────────
- *   256 qubits, each initialised to |0⟩
+ *   6 qubits, each initialised to |0⟩
  *   H (Hadamard) gate applied to every qubit  →  superposition |+⟩
  *   Simultaneous measurement collapses each qubit to 0 or 1 with equal
- *   probability, yielding a uniformly random 256-bit string.
+ *   probability, yielding a uniformly random 6-bit string.
  *
  * Simulation (browser / Node)
  * ───────────────────────────
@@ -16,7 +16,7 @@
  *   simulateQasmMeasurement() with a call to the hardware back-end.
  */
 
-const NUM_QUBITS = 256;
+const NUM_QUBITS = 6;
 
 /** Module-level state so the UI can inspect the last circuit without passing
  *  it through every call frame. */
@@ -29,7 +29,7 @@ let _lastBits = /** @type {number[]|null} */ (null);
 
 /**
  * Build a complete OpenQASM 2.0 source string for an n-qubit Hadamard
- * measurement circuit.  n defaults to 256 (one private-key bit per qubit).
+ * measurement circuit.  n defaults to 6.
  *
  * @param {number} numQubits
  * @returns {string}
@@ -63,7 +63,11 @@ export function buildQasmSource(numQubits = NUM_QUBITS) {
  * @returns {{ bytes: Uint8Array, bits: number[] }}
  */
 export function simulateQasmMeasurement(numQubits = NUM_QUBITS) {
-  const numBytes = Math.ceil(numQubits / 8);
+  // Always allocate at least 32 bytes so the private key derivation has
+  // sufficient entropy regardless of how many qubits the circuit uses.
+  // With fewer than 256 qubits the quantum measurement is demonstrative;
+  // the remaining key entropy is supplied by the CSPRNG padding below.
+  const numBytes = Math.max(32, Math.ceil(numQubits / 8));
   const bytes = new Uint8Array(numBytes);
   crypto.getRandomValues(bytes);
 

@@ -24,11 +24,11 @@ test('buildQasmSource emits exactly numQubits H gates', () => {
   assert.equal(hLines.length, numQubits);
 });
 
-test('buildQasmSource default produces 256-qubit circuit', () => {
+test('buildQasmSource default produces 6-qubit circuit', () => {
   const src = buildQasmSource();
-  assert.ok(src.includes('qreg q[256];'));
+  assert.ok(src.includes('qreg q[6];'));
   const hLines = src.split('\n').filter((l) => l.startsWith('h q['));
-  assert.equal(hLines.length, 256);
+  assert.equal(hLines.length, 6);
 });
 
 test('simulateQasmMeasurement returns correct number of bits', () => {
@@ -37,10 +37,10 @@ test('simulateQasmMeasurement returns correct number of bits', () => {
   assert.ok(bits.every((b) => b === 0 || b === 1), 'all bits must be 0 or 1');
 });
 
-test('simulateQasmMeasurement returns 32 bytes for 256 qubits', () => {
-  const { bytes, bits } = simulateQasmMeasurement(256);
+test('simulateQasmMeasurement returns 32 bytes for 6 qubits', () => {
+  const { bytes, bits } = simulateQasmMeasurement(6);
   assert.equal(bytes.length, 32);
-  assert.equal(bits.length, 256);
+  assert.equal(bits.length, 6);
 });
 
 test('simulateQasmMeasurement bits are consistent with bytes', () => {
@@ -64,12 +64,12 @@ test('quantumRandomPrivKey updates module-level circuit state', () => {
   const circuit = getLastQasmCircuit();
   const bits = getLastQasmBits();
   assert.ok(typeof circuit === 'string' && circuit.length > 0, 'circuit must be non-empty');
-  assert.ok(Array.isArray(bits) && bits.length === 256, 'bits must be 256-element array');
+  assert.ok(Array.isArray(bits) && bits.length === 6, 'bits must be 6-element array');
 });
 
 test('consecutive quantumRandomPrivKey calls produce different keys', () => {
   const k1 = quantumRandomPrivKey();
   const k2 = quantumRandomPrivKey();
-  // With 256-bit random output the probability of collision is negligible.
+  // With 32 bytes of random output the probability of collision is negligible.
   assert.notDeepEqual(Array.from(k1), Array.from(k2));
 });
